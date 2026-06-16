@@ -11,7 +11,9 @@ import com.prueba.pruebaTecnica_RESTAPI.repository.ProductRepository;
 import com.prueba.pruebaTecnica_RESTAPI.repository.TrackingHistoryRepository;
 import com.prueba.pruebaTecnica_RESTAPI.repository.UserRepository;
 import com.prueba.pruebaTecnica_RESTAPI.service.OrderService;
+
 import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -46,7 +48,8 @@ public class OrderServiceImpl implements OrderService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Usuario no encontrado"));
+                        new ResourceNotFoundException(
+                                "Usuario no encontrado"));
 
         Order order = new Order();
         order.setUser(user);
@@ -100,8 +103,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        TrackingHistory firstStatus =
-                new TrackingHistory();
+        TrackingHistory firstStatus = new TrackingHistory();
 
         firstStatus.setOrder(savedOrder);
         firstStatus.setStatus(OrderStatus.RECIBIDO);
@@ -132,4 +134,26 @@ public class OrderServiceImpl implements OrderService {
 
         return order.getTrackingHistory();
     }
+
+    @Override
+    @Transactional
+    public void updateStatus(
+            Long orderId,
+            OrderStatus status
+    ) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Pedido no encontrado"));
+
+        TrackingHistory trackingHistory =
+                new TrackingHistory();
+
+        trackingHistory.setOrder(order);
+        trackingHistory.setStatus(status);
+
+        trackingRepository.save(trackingHistory);
+    }
+
 }
